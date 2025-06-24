@@ -18,7 +18,7 @@ const registerUser = asyncHandler( async (req, res) => {
   */
     // 1st step
     const {fullName, email, username, password} = req.body
-    console.log("email: ", email);
+    // console.log("email: ", email);
     
 
     // if (fullName === "") {
@@ -33,16 +33,28 @@ const registerUser = asyncHandler( async (req, res) => {
     }
 
     // 3rd
-    const existedUser = User.findOne({
+    const existedUser = await User.findOne({
       $or: [{username}, {email}]
     })
     if (existedUser) {
       throw new ApiError(409, "User with email or username already exists")
     }
 
+    // console.log(req.files);
+    
+
     //4th -> multer gives files assess in this way
     const avatarLocalPath = req.files?.avatar[0]?.path;
-    const coverImageLocalPath = req.fiels?.coverImage[0]?.path;
+    // const coverImageLocalPath = req.files?.coverImage[0]?.path;
+    // console.log(avatarLocalPath);
+
+    // classic way to validate coveImage
+
+    let coverImageLocalPath;
+    if(req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0) {
+      coverImageLocalPath = req.files.coverImage[0].path
+    }
+    
 
     if (!avatarLocalPath) {
       throw new ApiError(400, "Avatar file is required")
@@ -64,7 +76,7 @@ const registerUser = asyncHandler( async (req, res) => {
       coverImage: coverImage?.url || "",
       email,
       password,
-      username: username.toLoweCase()
+      username: username.toLowerCase()
     })
     //7th
     const createdUser = await User.findById(user._id).select(
@@ -75,7 +87,7 @@ const registerUser = asyncHandler( async (req, res) => {
       throw new ApiError(500, "Something went wrong while registering the user")
     }
     // 9th
-    return res.satatus(201).json(
+    return res.status(201).json(
       new ApiResponse(200, createdUser, "User registered Successfully")
     )
 } )
