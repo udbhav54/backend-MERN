@@ -58,7 +58,7 @@ userSchema.pre("save", async function (next) {
 
   // this will run when password is modified and it will hash the password (it take 2 parameter 1-> password 2-> round)
 
-  this.password = bcrypt.hash(this.password, 10)
+  this.password = await bcrypt.hash(this.password, 10)
   next()
 })
 
